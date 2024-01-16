@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Flag Values
 var globalFlag bool
 var setValue string
 var proenvCmd string
@@ -28,7 +27,30 @@ var rootCmd = &cobra.Command{
 		}
 
 		if setValue != "" {
-			fmt.Printf("The global version called is : %s", setValue)
+			config, err := readConfig()
+			if err != nil {
+				fmt.Println("Error reading config:", err)
+				return
+			}
+
+			var versionExists bool
+			for _, v := range config.Versions {
+				if v.Version == setValue {
+					versionExists = true
+					break
+				}
+			}
+
+			if versionExists {
+				config.Global = setValue
+				if err := writeConfig(config); err != nil {
+					fmt.Println("Error writing config:", err)
+					return
+				}
+				fmt.Printf("Global version updated to: %s\n", setValue)
+			} else {
+				fmt.Printf("Version %s not found in the configuration\n", setValue)
+			}
 		}
 
 		if proenvCmd != "" {
@@ -61,7 +83,6 @@ type Config struct {
 func readConfig() (Config, error) {
 	var config Config
 
-	// Replace 'config.json' with the path to your JSON file
 	file, err := os.ReadFile("./config/config.json")
 	if err != nil {
 		return config, err
@@ -73,4 +94,13 @@ func readConfig() (Config, error) {
 	}
 
 	return config, nil
+}
+
+func writeConfig(config Config) error {
+	file, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile("./config/config.json", file, 0644)
 }

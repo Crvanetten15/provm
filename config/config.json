@@ -1,7 +1,17 @@
 {
-  "global": "10.1",
+  "global": "9.0",
   "versions": [
-    { "version": "10.1", "path": "C:/DLC101/bin/" },
-    { "version": "11.7", "path": "C:/DLC117/bin/" }
+    {
+      "version": "10.1",
+      "path": "C:/DLC101/bin/"
+    },
+    {
+      "version": "11.7",
+      "path": "C:/DLC117/bin/"
+    },
+    {
+      "version": "9.0",
+      "path": "C;/"
+    }
   ]
 }

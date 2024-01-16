@@ -1,40 +1,85 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
+type ConfigVersion struct {
+	Global   string        `json:"global"`
+	Versions []VersionInfo `json:"versions"`
+}
+type VersionInfo struct {
+	Version string `json:"version"`
+	Path    string `json:"path"`
+}
 
-// configCmd represents the config command
+var versionName string
+var versionPath string
+
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Configure versions",
+	Long:  `Configure the versions and paths for the application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("config called")
+		if versionName == "" {
+			fmt.Print("Enter version name: ")
+			versionName = readUserInput()
+		}
+
+		if versionPath == "" {
+			fmt.Print("Enter version path: ")
+			versionPath = readUserInput()
+		}
+
+		config, err := readVersionConfig()
+		if err != nil {
+			fmt.Println("Error reading config:", err)
+			return
+		}
+
+		config.Versions = append(config.Versions, VersionInfo{Version: versionName, Path: versionPath})
+
+		if err := writeVersionConfig(config); err != nil {
+			fmt.Println("Error writing config:", err)
+			return
+		}
+
+		fmt.Println("Version and path added successfully.")
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(configCmd)
 
-	// Here you will define your flags and configuration settings.
+	configCmd.Flags().StringVarP(&versionName, "version", "v", "", "Version name")
+	configCmd.Flags().StringVarP(&versionPath, "path", "p", "", "Version path")
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// configCmd.PersistentFlags().String("foo", "", "A help for foo")
+func readVersionConfig() (ConfigVersion, error) {
+	var config ConfigVersion
+	file, err := os.ReadFile("./config/config.json")
+	if err != nil {
+		return config, err
+	}
+	err = json.Unmarshal(file, &config)
+	return config, err
+}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// configCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+func writeVersionConfig(config ConfigVersion) error {
+	file, err := json.MarshalIndent(config, "", " ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile("./config/config.json", file, 0644)
+}
+
+func readUserInput() string {
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	return strings.TrimSpace(input)
 }
