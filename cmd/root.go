@@ -54,7 +54,25 @@ var rootCmd = &cobra.Command{
 		}
 
 		if proenvCmd != "" {
-			fmt.Printf("The Proenv called is : %s", proenvCmd)
+			config, err := readConfig()
+			if err != nil {
+				fmt.Println("Error reading config:", err)
+				return
+			}
+
+			var pathFound bool
+			for _, v := range config.Versions {
+				if v.Version == config.Global {
+					updatedPath := v.Path + proenvCmd
+					fmt.Printf("Updated path for global version %s: %s\n", config.Global, updatedPath)
+					pathFound = true
+					break
+				}
+			}
+
+			if !pathFound {
+				fmt.Println("Global version not found in configuration")
+			}
 		}
 	},
 }
