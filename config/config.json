@@ -1,0 +1,7 @@
+{
+  "global": "10.1",
+  "versions": [
+    { "version": "10.1", "path": "C:/DLC101/bin/" },
+    { "version": "11.7", "path": "C:/DLC117/bin/" }
+  ]
+}

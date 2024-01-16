@@ -1,34 +1,42 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
+// Flag Values
+var globalFlag bool
+var setValue string
+var proenvCmd string
 
-
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "provm",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Progress ABL Version Manager",
+	Long:  `How to manage multiple versions of Progress ABL within one terminal.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if globalFlag {
+			config, err := readConfig()
+			if err != nil {
+				fmt.Println("Error reading config:", err)
+				return
+			}
+			fmt.Println("Global version:", config.Global)
+		}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+		if setValue != "" {
+			fmt.Printf("The global version called is : %s", setValue)
+		}
+
+		if proenvCmd != "" {
+			fmt.Printf("The Proenv called is : %s", proenvCmd)
+		}
+	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -37,15 +45,32 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.provm.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().BoolVarP(&globalFlag, "global", "g", false, "Global flag")
+	rootCmd.PersistentFlags().StringVarP(&setValue, "set-global", "s", "", "Optional value for the global flag")
+	rootCmd.PersistentFlags().StringVarP(&proenvCmd, "call", "c", "", "Optional value for the global flag")
 }
 
+type Config struct {
+	Global   string `json:"global"`
+	Versions []struct {
+		Version string `json:"version"`
+		Path    string `json:"path"`
+	} `json:"versions"`
+}
 
+func readConfig() (Config, error) {
+	var config Config
+
+	// Replace 'config.json' with the path to your JSON file
+	file, err := os.ReadFile("./config/config.json")
+	if err != nil {
+		return config, err
+	}
+
+	err = json.Unmarshal(file, &config)
+	if err != nil {
+		return config, err
+	}
+
+	return config, nil
+}
