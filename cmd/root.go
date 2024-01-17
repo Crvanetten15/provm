@@ -17,6 +17,7 @@ var rootCmd = &cobra.Command{
 	Short: "Progress ABL Version Manager",
 	Long:  `How to manage multiple versions of Progress ABL within one terminal.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Section for using -g flag
 		if globalFlag {
 			config, err := readConfig()
 			if err != nil {
@@ -26,6 +27,7 @@ var rootCmd = &cobra.Command{
 			fmt.Println("Global version:", config.Global)
 		}
 
+		// Section for using -s flag
 		if setValue != "" {
 			config, err := readConfig()
 			if err != nil {
@@ -53,6 +55,7 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
+		// Section for using -c flag
 		if proenvCmd != "" {
 			config, err := readConfig()
 			if err != nil {
@@ -64,7 +67,7 @@ var rootCmd = &cobra.Command{
 			for _, v := range config.Versions {
 				if v.Version == config.Global {
 					updatedPath := v.Path + proenvCmd
-					fmt.Printf("Updated path for global version %s: %s\n", config.Global, updatedPath)
+					fmt.Printf("Calling bin exe from v%s: %s\n", config.Global, updatedPath)
 					pathFound = true
 					break
 				}
