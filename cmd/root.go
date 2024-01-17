@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/spf13/cobra"
 )
@@ -66,8 +67,17 @@ var rootCmd = &cobra.Command{
 			var pathFound bool
 			for _, v := range config.Versions {
 				if v.Version == config.Global {
-					updatedPath := v.Path + proenvCmd
-					fmt.Printf("Calling bin exe from v%s: %s\n", config.Global, updatedPath)
+					fullPath := v.Path + proenvCmd
+					fmt.Printf("Executing file at: %s\n", fullPath)
+
+					// Execute the file
+					output, err := exec.Command(fullPath).CombinedOutput()
+					if err != nil {
+						fmt.Printf("Error executing file: %s\n", err)
+						return
+					}
+
+					fmt.Println("Command Output:", string(output))
 					pathFound = true
 					break
 				}
